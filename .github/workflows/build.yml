@@ -15,8 +15,10 @@ jobs:
         include:
           - os: windows-latest
             output_name: IsoTarget.exe
-          - os: macos-latest
+          - os: macos-13  # Intel Mac for universal compatibility
             output_name: IsoTarget
+          - os: macos-latest  # Apple Silicon Mac
+            output_name: IsoTarget-ARM
 
     steps:
     - name: Checkout code
@@ -32,25 +34,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyinstaller pillow
 
-    - name: List files (debug)
-      shell: bash
-      run: |
-        ls -la
-
     - name: Build executable (Windows)
       if: runner.os == 'Windows'
       run: |
         pyinstaller --noconfirm --onefile --windowed --name IsoTarget IsoTarget_classroom.py
-        
-    - name: Build executable (macOS)
-      if: runner.os == 'macOS'
+
+    - name: Build executable (macOS Intel)
+      if: matrix.os == 'macos-13'
       run: |
         pyinstaller --noconfirm --onefile --windowed --name IsoTarget IsoTarget_classroom.py
+        pyinstaller --noconfirm --windowed --name IsoTarget-App IsoTarget_classroom.py
 
-    - name: List dist contents (debug)
-      shell: bash
+    - name: Build executable (macOS Apple Silicon)
+      if: matrix.os == 'macos-latest'
       run: |
-        ls -la dist/
+        pyinstaller --noconfirm --onefile --windowed --name IsoTarget-ARM IsoTarget_classroom.py
+        pyinstaller --noconfirm --windowed --name IsoTarget-App-ARM IsoTarget_classroom.py
 
     - name: Upload Windows executable
       if: runner.os == 'Windows'
@@ -60,23 +59,34 @@ jobs:
         path: dist/IsoTarget.exe
         retention-days: 30
 
-    - name: Upload macOS executable  
-      if: runner.os == 'macOS'
+    - name: Upload macOS Intel executable  
+      if: matrix.os == 'macos-13'
       uses: actions/upload-artifact@v4
       with:
-        name: IsoTarget-macOS
+        name: IsoTarget-macOS-Intel
         path: dist/IsoTarget
         retention-days: 30
 
-    - name: Create App Bundle (macOS alternative)
-      if: runner.os == 'macOS'
-      run: |
-        pyinstaller --noconfirm --windowed --name IsoTarget-App IsoTarget_classroom.py
-
-    - name: Upload macOS App Bundle
-      if: runner.os == 'macOS'
+    - name: Upload macOS Intel App Bundle
+      if: matrix.os == 'macos-13'
       uses: actions/upload-artifact@v4
       with:
-        name: IsoTarget-macOS-App-Bundle
+        name: IsoTarget-macOS-Intel-App-Bundle
         path: dist/IsoTarget-App.app/
+        retention-days: 30
+
+    - name: Upload macOS Apple Silicon executable  
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: IsoTarget-macOS-AppleSilicon
+        path: dist/IsoTarget-ARM
+        retention-days: 30
+
+    - name: Upload macOS Apple Silicon App Bundle
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: IsoTarget-macOS-AppleSilicon-App-Bundle
+        path: dist/IsoTarget-App-ARM.app/
         retention-days: 30
