@@ -37,19 +37,19 @@ jobs:
     - name: Build executable (Windows)
       if: runner.os == 'Windows'
       run: |
-        pyinstaller --noconfirm --onefile --windowed --name IsoTarget IsoTarget_classroom.py
+        pyinstaller --noconfirm --onefile --windowed --name IsoTarget IsoTarget.py
 
     - name: Build executable (macOS Intel)
       if: matrix.os == 'macos-13'
       run: |
-        pyinstaller --noconfirm --onefile --windowed --name IsoTarget IsoTarget_classroom.py
-        pyinstaller --noconfirm --windowed --name IsoTarget-App IsoTarget_classroom.py
+        pyinstaller --noconfirm --onefile --windowed --name IsoTarget --osx-bundle-identifier edu.washburn.isotarget IsoTarget.py
+        pyinstaller --noconfirm --windowed --name IsoTarget-App --osx-bundle-identifier edu.washburn.isotarget IsoTarget.py
 
     - name: Build executable (macOS Apple Silicon)
       if: matrix.os == 'macos-latest'
       run: |
-        pyinstaller --noconfirm --onefile --windowed --name IsoTarget-ARM IsoTarget_classroom.py
-        pyinstaller --noconfirm --windowed --name IsoTarget-App-ARM IsoTarget_classroom.py
+        pyinstaller --noconfirm --onefile --windowed --name IsoTarget-ARM --osx-bundle-identifier edu.washburn.isotarget IsoTarget.py
+        pyinstaller --noconfirm --windowed --name IsoTarget-App-ARM --osx-bundle-identifier edu.washburn.isotarget IsoTarget.py
 
     - name: Upload Windows executable
       if: runner.os == 'Windows'
